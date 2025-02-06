@@ -1,13 +1,10 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"sync"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
 // Model
@@ -109,43 +106,57 @@ func NewBookHandler(service *BookService) *BookHandler {
 	return &BookHandler{service: service}
 }
 
-func (h *BookHandler) GetItems(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(h.service.GetItems())
+func (h *BookHandler) GetItems(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, h.service.GetItems())
 }
 
-func (h *BookHandler) GetItem(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
+func (h *BookHandler) GetItem(c *gin.Context) {
+	id := c.Param("id")
 	if book, found := h.service.GetItem(id); found {
-		json.NewEncoder(w).Encode(book)
+		c.IndentedJSON(http.StatusOK, book)
+		return
 	} else {
-		http.Error(w, "Book not found", http.StatusNotFound)
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found"})
 	}
 }
 
-func (h *BookHandler) CreateItem(w http.ResponseWriter, r *http.Request) {
+func (h *BookHandler) CreateItem(c *gin.Context) {
 	var book Book
-	json.NewDecoder(r.Body).Decode(&book)
+	if err := c.BindJSON(&book); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
+		return
+	}
 	h.service.CreateItem(book)
-	w.WriteHeader(http.StatusCreated)
+	c.IndentedJSON(http.StatusCreated, book)
 }
 
-func (h *BookHandler) UpdateItem(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
+func (h *BookHandler) UpdateItem(c *gin.Context) {
+	id := c.Param("id")
+
 	var book Book
-	json.NewDecoder(r.Body).Decode(&book)
+	if err := c.BindJSON(&book); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
 	if h.service.UpdateItem(id, book) {
-		w.WriteHeader(http.StatusOK)
+		c.Status(http.StatusOK)
+		return
 	} else {
-		http.Error(w, "Book not found", http.StatusNotFound)
+		c.Status(http.StatusBadRequest)
+		return
 	}
 }
 
-func (h *BookHandler) DeleteItem(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
+func (h *BookHandler) DeleteItem(c *gin.Context) {
+	id := c.Param("id")
+
 	if h.service.DeleteItem(id) {
-		w.WriteHeader(http.StatusOK)
+		c.Status(http.StatusOK)
+		return
 	} else {
-		http.Error(w, "Book not found", http.StatusNotFound)
+		c.Status(http.StatusBadRequest)
+		return
 	}
 }
 
@@ -155,13 +166,12 @@ func main() {
 	service := NewBookService(repo)
 	handler := NewBookHandler(service)
 
-	r := mux.NewRouter()
-	r.HandleFunc("/books", handler.GetItems).Methods("GET")
-	r.HandleFunc("/books/{id}", handler.GetItem).Methods("GET")
-	r.HandleFunc("/books", handler.CreateItem).Methods("POST")
-	r.HandleFunc("/books/{id}", handler.UpdateItem).Methods("PUT")
-	r.HandleFunc("/books/{id}", handler.DeleteItem).Methods("DELETE")
+	router := gin.Default()
+	router.GET("/books", handler.GetItems)
+	router.GET("/books/:id", handler.GetItem)
+	router.POST("/books", handler.CreateItem)
+	router.PUT("/books/:id", handler.UpdateItem)
+	router.DELETE("/books/:id", handler.DeleteItem)
 
-	fmt.Println("Server running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	router.Run("localhost:8081")
 }

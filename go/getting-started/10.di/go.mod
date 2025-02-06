@@ -2,10 +2,7 @@ module github.com/rafael-biz/getting-started/books
 
 go 1.23.4
 
-require (
-	github.com/gin-gonic/gin v1.10.0
-	github.com/gorilla/mux v1.8.1
-)
+require github.com/gin-gonic/gin v1.10.0
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
