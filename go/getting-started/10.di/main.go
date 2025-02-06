@@ -31,7 +31,7 @@ func NewBookRepository() *BookRepository {
 func (r *BookRepository) GetAll() []Book {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	var result []Book
+	result := make([]Book, 0)
 	for _, book := range r.books {
 		result = append(result, book)
 	}

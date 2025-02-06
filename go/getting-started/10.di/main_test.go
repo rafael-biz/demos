@@ -9,6 +9,10 @@ func TestBookService(t *testing.T) {
 	repo := NewBookRepository()
 	service := NewBookService(repo)
 
+	if service.GetItems() == nil {
+		t.Error("Expected 0 book, got nil")
+	}
+
 	if len(service.GetItems()) != 0 {
 		t.Errorf("Expected 0 book, got %d", len(service.GetItems()))
 	}
