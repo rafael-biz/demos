@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authors</title>
+</head>
+<body>
+    <h1>Author List</h1>
+    <a href="/author/create">Add New Author</a>
+    <ul>
+        {{range .}}
+        <li>{{.Name}}
+            <a href="/author/update?id={{.ID}}">Edit</a>
+            <a href="/author/delete?id={{.ID}}">Delete</a>
+        </li>
+        {{end}}
+    </ul>
+    <a href="/">Back to Book List</a>
+</body>
+</html>
