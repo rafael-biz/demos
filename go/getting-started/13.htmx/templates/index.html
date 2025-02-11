@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTMX with Go</title>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+</head>
+<body>
+    <h1>Welcome to the HTMX & Go App</h1>
+    <button hx-get="/items" hx-target="#items" hx-swap="innerHTML">Load Items</button>
+    <div id="items"></div>
+</body>
+</html>
