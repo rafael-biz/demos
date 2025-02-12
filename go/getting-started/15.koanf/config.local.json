@@ -1,0 +1,9 @@
+{
+    "app_name": "Getting Started",
+    "Port": 80,
+    "debug_mode": true,
+    "database": {
+        "host": "localhost",
+        "port": 5432
+    }
+}
